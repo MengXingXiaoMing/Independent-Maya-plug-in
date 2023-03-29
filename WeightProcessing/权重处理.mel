@@ -1,0 +1,449 @@
+global proc WindowQvanZhongChuLi_asInstallScriptLocator()
+{
+string $whatIs=`whatIs WindowQvanZhongChuLi`;
+string $fullPath=`substring $whatIs 25 999`;
+string $buffer[];
+string $slash="/";
+if (`gmatch $whatIs "*\\\\*"`)//sourced from ScriptEditor
+	$slash="\\";
+int $numTok=`tokenize $fullPath $slash $buffer`;
+int $numLetters=size($fullPath);
+int $numLettersLastFolder=size($buffer[$numTok-1]);
+global string $scriptLocationSkirtFollow;
+$scriptLocationSkirtFollow=`substring $fullPath 1 ($numLetters-$numLettersLastFolder)`;
+//print $scriptLocationSkirtFollow;
+}
+WindowQvanZhongChuLi_asInstallScriptLocator;
+
+global proc WindowQvanZhongChuLi(){
+if(`window -ex WindowQvanZhongChuLi`)deleteUI WindowQvanZhongChuLi;
+window  -t "权重处理"  WindowQvanZhongChuLi;columnLayout;
+rowColumnLayout  -nc 1 -adj 1;
+    rowColumnLayout  -nc 3 -adj 3;
+        rowColumnLayout  -nc 2 -adj 3;
+            button  -l "选择拷贝源:"  -c "SelectTextFieldData (\"XZKBY\")";//选择拷贝源
+            textFieldButtonGrp -cw3 0 100 65 -l (" 选择拷贝源:") -text "" -bl   "加载" -bc "MeshAndPointTextFieldButtonGrpName (\"XZKBY\")" XZKBY;
+        setParent ..;
+        rowColumnLayout  -nc 2 -adj 3;
+            button  -l "选择需拷贝点:" -c "SelectTextFieldData (\"XZKBMXHD\")";//选择需拷贝点
+            textFieldButtonGrp -cw3 0 100 65 -l (" 选择需拷贝点:") -text "" -bl    "加载" -bc "MeshAndPointTextFieldButtonGrpName (\"XZKBMXHD\")" XZKBMXHD ;
+        setParent ..;
+        button -l "拷贝点权重"  -c kbdqz;
+        rowColumnLayout  -nc 2 -adj 2;
+            button -l "复制顶点权重"   -c artAttarSkinWeightCopy;
+            button -l "粘贴顶点权重"   -c artAttrSkinWeightPaste;
+            button -l "移除无权重骨骼"  -c RemoveUnusedInfluences;
+            button -l "绝对镜像权重(穿模)"  -c "AbsolutePositionMirrorWeight";
+        setParent ..;
+        rowColumnLayout  -nc 7 -adj 1;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "paintSkinWeights.png"  -flat 0 -c ArtPaintSkinWeightsTool;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "weightHammer.png" -h 45 -flat 0 -c weightHammerVerts;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "copySkinWeight.png" -flat 0 -c CopySkinWeights;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "mirrorSkinWeight.png"  -flat 0 -c MirrorSkinWeights;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "moveSkinnedJoint.png"  -flat 0 -c MoveSkinJointsTool;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "moveVertexWeights.png"  -flat 0 -c artAttrMoveInfluence;
+            iconTextButton -style "iconAndTextCentered" -l "" -i "showInfluence.png"  -flat 0 -c ("artAttrShowInfluences artAttrSkinPaintCtx");
+        setParent ..;
+        rowColumnLayout  -nc 1 -adj 1;
+            button -l "拷贝权重(先选源模型)"  -c kbqz;
+            button -l "对半拷贝权重"   -c dbkbqz;
+        setParent ..;
+    setParent ..;
+    rowColumnLayout  -nc 3 -adj 3;
+        optionMenu  -label "" NormalizeWeight;
+                            menuItem -label "后期";
+                            menuItem -label "交互";
+                            optionMenu -edit -select 1 NormalizeWeight;
+        intSliderGrp -l "平滑次数：" -cw3 60 40 258  -f 1 -v 1 -min 1 -max 100 -fieldMaxValue 9999 phcs;
+        button -l "平滑权重"  -w 60  -c phqz ;
+    setParent ..;
+    rowColumnLayout  -nc 4 -adj 3;
+        button -l "选择原模型:"  -c "SelectTextFieldData (\"XZYMX\")";//选择原模型
+        textFieldButtonGrp -bl "加载" -bc "MeshAndPointTextFieldButtonGrpName (\"XZYMX\")" XZYMX;
+        button -l "选择分解模型开始复制权重"  -c ksfz;
+        button -l "导出权重" -c ExportWeights;
+        button -l "选择模型:"   -c "SelectTextFieldData (\"ZYQZ\")";//选择原模型
+        textFieldButtonGrp -bl "加载" -bc "MeshAndPointTextFieldButtonGrpName (\"ZYQZ\")" ZYQZ;
+        button -l "转移权重(先选要转移的骨骼)"  -c TransferWeight; 
+        button -l "导入权重"    -c ImportWeights; 
+    setParent ..;
+    
+    rowColumnLayout  -bgc 0.7 0.7 1 -nc 8 -adj 2;
+        textFieldGrp   -cw2 80 70  -l ("模型面数(大致):") -text "2000" ModelFace;
+        floatSliderGrp -l "减少细节" -cw3 50 30 100 -f 1 -v 20 -min 1 -max 100 -fieldMaxValue 9999 ReduceDetail;
+        floatSliderGrp -l "平滑程度" -cw3 50 40 100 -f 1 -v 100 -min 1 -max 100 -fieldMaxValue 9999 Smoothness;
+    setParent ..;
+    rowColumnLayout  -bgc 0.7 0.7 1 -nc 9 -adj 1;
+        text -l "简模镜像方向(世界轴)";
+        radioCollection  FKKZQSC_ModelMirror;
+            radioButton -label "None" None;
+            radioButton -label "X → -X" X;
+            radioButton -label "-X → X" FX;
+            radioButton -label "Y → -Y" Y;
+            radioButton -label "-Y → Y" FY;
+            radioButton -label "Z → -Z" Z;
+            radioButton -label "-Z → Z" FZ;
+        radioCollection -edit -select "X" FKKZQSC_ModelMirror;
+        button -l "生成简模"    -c GeneratingSimpleModule; 
+    setParent ..;
+setParent ..;
+showWindow;
+}
+WindowQvanZhongChuLi;
+//选择框内数据
+global proc SelectTextFieldData(string $textFieldButtonGrpName){
+    string $TextField=`textFieldButtonGrp -q -text $textFieldButtonGrpName`;
+    string $TextFieldData[];
+    $numTokens = `tokenize $TextField "," $TextFieldData`;
+    select $TextFieldData;
+}
+//加载模型或是点进入框内
+global proc MeshAndPointTextFieldButtonGrpName(string $textFieldButtonGrpName){
+    string $LoadModeOrPoint[]=`ls -sl -fl`;
+    string $type=`objectType  $LoadModeOrPoint[0]`;//获取加载的类型
+        for($i=0;$i<size($LoadModeOrPoint)-1;$i++){
+            $LoadModeOrPoint[$i]=($LoadModeOrPoint[$i]+",");
+        }
+        for($i=1;$i<size($LoadModeOrPoint);$i++){
+            $LoadModeOrPoint[0]=($LoadModeOrPoint[0]+$LoadModeOrPoint[$i]);
+        }
+        textFieldButtonGrp -e -tx $LoadModeOrPoint[0] $textFieldButtonGrpName;
+}
+//拷贝点权重
+global proc kbdqz(){
+    string $PointModelGrpText=`textFieldButtonGrp -q -text XZKBMXHD`;
+    SelectTextFieldData ("XZKBMXHD");
+    string $Point[]=`ls -sl -fl`;
+    string $Model2[]=`listRelatives -parent $Point[0]`;
+    string $Model2[]=`listRelatives -parent $Model2[0]`;
+    string $Model=`textFieldButtonGrp -q -text XZKBY`;
+    select -r $Model;
+    string $Joint[]=`skinCluster -q -inf`;
+    string $type=`objectType  $Point[0]`;
+    select -r $Point;
+    string $HaveWeight=`findRelatedSkinCluster($Model2[0])`;
+    if(size($HaveWeight)==0){
+        select -r $Joint;
+        select -add $Model2;
+        SmoothBindSkin;
+    }else{
+        select -r $Joint;        
+        select -add $Model2;
+        AddInfluence;
+    }
+    select -r $Model;
+    select -add $Point;
+    copySkinWeights  -noMirror -surfaceAssociation closestPoint -influenceAssociation oneToOne;
+    select -cl;
+}
+//绝对位置镜像权重
+global proc AbsolutePositionMirrorWeight(){
+    string $Sel[]=`ls -sl`;
+    select -r $Sel[1];
+    duplicate -rr;
+    rename ($Sel[1]+"_WeightCopy");
+    select -r $Sel[0];
+    duplicate -rr;
+    rename ($Sel[0]+"_WeightCopy");
+    select -r $Sel[0] ($Sel[0]+"_WeightCopy");
+    kbqz;
+    select -r ($Sel[0]+"_WeightCopy");
+    ExportWeights;
+    select -r $Sel[1] ($Sel[1]+"_WeightCopy");
+    kbqz;
+    polyAverageVertex -i 10 -ch 1 ($Sel[0]+"_WeightCopy");
+    polyAverageVertex -i 10 -ch 1 ($Sel[1]+"_WeightCopy");
+    polyAverageVertex -i 10 -ch 1 ($Sel[0]+"_WeightCopy");
+    polyAverageVertex -i 10 -ch 1 ($Sel[1]+"_WeightCopy");
+    polyAverageVertex -i 10 -ch 1 ($Sel[0]+"_WeightCopy");
+    polyAverageVertex -i 10 -ch 1 ($Sel[1]+"_WeightCopy");
+    select -r ($Sel[0]+"_WeightCopy") ($Sel[1]+"_WeightCopy");
+    BakeNonDefHistory;
+    select -r ($Sel[0]+"_WeightCopy");
+    ImportWeights;
+    select ($Sel[0]+"_WeightCopy") ($Sel[1]+"_WeightCopy");
+    MirrorSkinWeights;
+    select -r  ($Sel[1]+"_WeightCopy") $Sel[1];
+    string $BlendB[]=`blendShape`;
+    setAttr ($BlendB[0]+"."+$Sel[1]+"_WeightCopy") 1;
+    select ($Sel[1]+"_WeightCopy") $Sel[1];
+    kbqz;
+    delete ($Sel[0]+"_WeightCopy") ($Sel[1]+"_WeightCopy") $BlendB;
+}
+
+//拷贝权重
+global proc kbqz(){
+    string $AllModel[]=`ls -sl`;
+    select -r $AllModel[0];
+    string $Joint[]=`skinCluster -q -inf`;
+    for($i=1;$i<size($AllModel);$i++){
+        select -r $AllModel[$i];
+        string $HaveWeight=`findRelatedSkinCluster($AllModel[$i])`;
+        if(size($HaveWeight)==0){
+        select -r $Joint;
+        select -add $AllModel[$i];
+        SmoothBindSkin;
+        }else{
+        select -r $Joint;
+        select -add $AllModel[$i];
+        AddInfluence;
+        }
+    }
+    for($i=1;$i<size($AllModel);$i++){
+        select -r $AllModel[0];
+        select -add $AllModel[$i];
+        copySkinWeights -noMirror -surfaceAssociation closestPoint -influenceAssociation oneToOne;
+    }
+}
+//对半拷贝权重
+global proc dbkbqz(){
+    SelectHierarchy;
+    string $Mesh[]=`ls -sl -type "mesh"`;
+    select -r $Mesh;
+    pickWalk -d up;
+    string $DoubleModel[]=`ls -sl`;
+    int $n=size($DoubleModel)%2;
+    int $j=size($DoubleModel)/2;
+    if($n==0){
+        for($i=0;$i<(size($DoubleModel)/2);$i++){
+            select -r $DoubleModel[$i];
+            select -add $DoubleModel[$i+$j];
+            kbqz;
+        }
+    }else{
+         error "请选择双数模型";
+    }
+}
+//平滑权重
+global proc phqz(){
+    string $Model[]=`ls -sl`;
+    string $Joint[]=`skinCluster -q -inf`;
+    int $NormalizeWeight=`optionMenu -q -select NormalizeWeight`;
+    select $Model;
+    if($NormalizeWeight==1){
+        //EnableWeightPostNrm;
+        skinCluster -e -nw 2;
+    }else{
+        //EnableWeightNrm;
+        skinCluster -e -nw 1;
+    }
+    select $Model;
+    
+    ArtPaintSkinWeightsTool;
+    artAttrPaintOperation artAttrSkinPaintCtx Smooth;
+    
+    $CS=`intSliderGrp -q -v phcs`;
+    for($i=0;$i<size($Joint);$i++){
+       setSmoothSkinInfluence $Joint[$i];//artSkinRevealSelected artAttrSkinPaintCtx;
+       for($J=0;$J<$CS;$J++){
+           artAttrSkinPaintCtx -e -opacity 1 -clear `currentCtx`;
+       }
+    }
+}
+//分解反拷权重
+global proc ksfz(){
+    string $ModelGrp[]=`ls -sl`;
+    SelectTextFieldData ("XZYMX");
+    string $YvanModel[]=`ls -sl`;
+    select -cl  ;
+    doGroup 0 1 1;
+    string $Grp[]=`ls -sl`;
+    string $ModelCopyGrp[];
+    for($i=0;$i<size($ModelGrp);$i++){
+        select -r $ModelGrp[$i];
+        string $Joint[]=`skinCluster -q -inf`;
+        duplicate -rr;
+        string $ModelCopy[]=`ls -sl`;
+        $ModelCopyGrp[$i]=$ModelCopy[0];    
+        select -r $Joint;
+        select -add $ModelCopy;
+        SmoothBindSkin;
+        select -r $ModelGrp[$i];
+        select -add $ModelCopy;
+        CopySkinWeights;
+        select -r $ModelCopy;
+        select -add $Grp;
+        parent;
+    }
+    select -cl  ;
+    select  $ModelCopyGrp;
+    polyUniteSkinned;
+    string $HBmodel[]=`ls  -sl`;
+    string $Joint[]=`skinCluster -q -inf`;
+    for($i=0;$i<size($YvanModel);$i++){
+        select -r $YvanModel[$i];
+        if(catch(`skinCluster -q -inf`)){
+            select -r $Joint;
+            select -add $YvanModel;
+            SmoothBindSkin;
+        }else{
+            select -r $Joint;
+            select -add $YvanModel;
+            AddInfluence;
+        }
+    }
+    for($i=0;$i<size($YvanModel);$i++){
+        select -r $HBmodel;
+        select -add $YvanModel[$i];
+        CopySkinWeights;
+    }
+    delete $HBmodel;
+    delete $Grp;
+    }
+//导出权重
+global proc ExportWeights(){
+    global string $scriptLocationSkirtFollow;
+    string $Model[]=`ls -sl`;
+    RemoveUnusedInfluences;
+    python("import sys");
+    python("sys.path.append(\""+$scriptLocationSkirtFollow+"\")");
+    python("from ImportExportWeight import ExportWeight");
+    python("ExportWeight()");
+    for($i=0;$i<size($Model);$i++){
+        string $SkinCluster = `findRelatedSkinCluster($Model[$i])`;
+        deformerWeights -export -deformer $SkinCluster -format "XML" -path ($scriptLocationSkirtFollow+"ImportExportWeights\\") ($Model[$i]+".xml");
+    }
+}
+//导入权重
+global proc ImportWeights(){
+    global string $scriptLocationSkirtFollow;
+    string $Model[]=`ls -sl`;
+    RemoveUnusedInfluences;
+    select -cl  ;
+    select -r $Model;
+    python("import sys");
+    python("sys.path.append(\""+$scriptLocationSkirtFollow+"\")");
+    python("from ImportExportWeight import *");
+    python("ImportWeight()");
+}
+//转移权重
+global proc TransferWeight(){
+    string $Joint[]=`ls -sl`;
+    string $Model=`textFieldButtonGrp -q -text ZYQZ`;
+    string $SkinCluster=`findRelatedSkinCluster($Model)`;
+    select -r ($Model+".vtx[0:999999999]");
+    skinPercent -tmw $Joint[0] -tmw $Joint[1] $SkinCluster;
+    select -r $Model;
+}
+//建立简模
+global proc GeneratingSimpleModule()
+{    
+    float $ReduceDetail=`floatSliderGrp -q -v ReduceDetail`;
+    float $Smoothness=`floatSliderGrp -q -v Smoothness`;
+    GeneratingSimpleModule2("Have",$ReduceDetail,$Smoothness);
+    //GeneratingSimpleModule2("None",0,0);
+}
+global proc GeneratingSimpleModulePretreatment(){
+    string $sel[]=`ls -sl`;
+    string $ModelMirror=`radioCollection -q -select FKKZQSC_ModelMirror`;
+    if($ModelMirror!="None"){
+        polyMirrorFace  -cutMesh 1 -axis 0 -axisDirection 0 -mergeMode 3 -mergeThresholdType 0 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 0  $sel[0];
+        polySeparate -ch 0;
+        DeleteHistory;
+        CenterPivot;
+        string $MorrySel[]=`ls -sl`;
+        string $Loc[]=`spaceLocator -p 0 0 0`;
+        pointConstraint -offset 0 0 0 -weight 1 $MorrySel[0] $Loc[0];
+        float $num[]=`xform  -q -ws -t $Loc[0]`;
+        select $MorrySel;
+        if($ModelMirror=="X"){
+            if($num[0]<0){
+                delete $MorrySel[1];
+            }else{
+                delete $MorrySel[0];
+            }
+        }
+        if($ModelMirror=="FX"){
+            if($num[0]>0){
+                delete $MorrySel[1];
+            }else{
+                delete $MorrySel[0];
+            }
+        }
+        if($ModelMirror=="Y"){
+            if($num[1]<0){
+                delete $MorrySel[1];
+            }else{
+                delete $MorrySel[0];
+            }
+        }
+        if($ModelMirror=="FY"){
+            if($num[1]>0){
+                delete $MorrySel[1];
+            }else{
+                delete $MorrySel[0];
+            }
+        }
+        if($ModelMirror=="Z"){
+            if($num[2]<0){
+                delete $MorrySel[1];
+            }else{
+                delete $MorrySel[0];
+            }
+        }
+        if($ModelMirror=="FZ"){
+            if($num[2]>0){
+                delete $MorrySel[1];
+            }else{
+                delete $MorrySel[0];
+            }
+        }
+        DeleteHistory;
+        delete $Loc;
+    }
+    
+}
+
+global proc GeneratingSimpleModule2(string $CancelMirroring,float $ReduceDetail,float $Smoothness)
+{
+    string $Delete[]=`ls -sl`;
+    duplicate -rr;
+    GeneratingSimpleModulePretreatment;
+    string $sel[]=`ls -sl`;
+    
+    polySmooth  -mth 0 -sdt 2 -ovb 1 -ofb 3 -ofc 0 -ost 0 -ocr 0 -dv 1 -bnr 1 -c 1 -kb 1 -ksb 1 -khe 0 -kt 1 -kmb 1 -suv 1 -peh 0 -sl 1 -dpe 1 -ps 0.1 -ro 1 -ch 1 $sel[0];
+    DeleteHistory;
+    string $PolyRemeshNode[]=`polyRemesh -refineThreshold 0.1 -reduceThreshold $ReduceDetail -smoothStrength $Smoothness`;
+    DeleteHistory;
+    float $FaceNum=`textFieldGrp -q -text ModelFace`;
+    select -r $sel;
+    DeleteHistory;
+    select -cl  ;
+    select -r $sel;
+    string $ModelMirror=`radioCollection -q -select FKKZQSC_ModelMirror`;
+    if($CancelMirroring=="None"){
+        pass;
+    }    
+    if($ModelMirror!="None"){
+        $FaceNum=($FaceNum/2);
+    }
+    string $polyRetopoNode[]=`polyRetopo -targetFaceCount $FaceNum -targetEdgeLengthMax 1`;
+    DeleteHistory;
+    if($CancelMirroring=="None"){
+        $ModelMirror="None";
+    }    
+    if($ModelMirror!="None"){
+        if($ModelMirror=="X"){
+            polyMirrorFace  -cutMesh 1 -axis 0 -axisDirection 0 -mergeMode 1 -mergeThresholdType 1 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 1 $sel[0];
+        }
+        if($ModelMirror=="FX"){
+            polyMirrorFace  -cutMesh 1 -axis 0 -axisDirection 1 -mergeMode 1 -mergeThresholdType 1 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 1 $sel[0];
+        }
+        if($ModelMirror=="Y"){
+            polyMirrorFace  -cutMesh 1 -axis 1 -axisDirection 0 -mergeMode 1 -mergeThresholdType 1 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 1 $sel[0];
+        }
+        if($ModelMirror=="FY"){
+            polyMirrorFace  -cutMesh 1 -axis 1 -axisDirection 1 -mergeMode 1 -mergeThresholdType 1 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 1 $sel[0];
+        }
+        if($ModelMirror=="Z"){
+            polyMirrorFace  -cutMesh 1 -axis 2 -axisDirection 0 -mergeMode 1 -mergeThresholdType 1 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 1 $sel[0];
+        }
+        if($ModelMirror=="FZ"){
+            polyMirrorFace  -cutMesh 1 -axis 2 -axisDirection 1 -mergeMode 1 -mergeThresholdType 1 -mergeThreshold 0.001 -mirrorAxis 2 -mirrorPosition 0 -smoothingAngle 30 -flipUVs 0 -ch 1 $sel[0];
+        }
+    }
+    DeleteHistory;
+    if($CancelMirroring=="None"){
+        delete $Delete[0];
+    }
+}
