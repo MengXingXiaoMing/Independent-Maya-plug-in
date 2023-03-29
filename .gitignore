@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#去除.pyc文件
+git rm -r *.pyc
+git add -f *.pyc
+git commit -m "remove pyc file"
