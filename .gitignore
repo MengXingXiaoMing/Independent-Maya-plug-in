@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 #去除.pyc文件
-**/*.pyc
+*.pyc
