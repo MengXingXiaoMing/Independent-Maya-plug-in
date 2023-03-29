@@ -497,6 +497,5 @@ class ZKM_QvanZhongChuLiCommandsClass:
 
 
 
-'''if __name__ == '__main__':
-    ZKM_QvanZhongChuLiWindowClass().ZKM_WindowQvanZhongChuLiWindow()'''
-ZKM_QvanZhongChuLiWindowClass().ZKM_WindowQvanZhongChuLiWindow()
+if __name__ == '__main__':
+    ZKM_QvanZhongChuLiWindowClass().ZKM_WindowQvanZhongChuLiWindow()
